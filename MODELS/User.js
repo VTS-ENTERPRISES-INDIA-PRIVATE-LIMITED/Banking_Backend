@@ -14,12 +14,16 @@ const UserSchema = new mongoose.Schema({
         required: true,
     },
     Telephone: {
-        type: Number,
+        type: String,
         required: true,
     },
     MobileNumber:{
-        type: Number,
-        required: false,
+        type: String,
+        required: true,
+    },
+    Email: {
+        type: String,
+        required: true,
     },
     State: {
         type: String,
@@ -33,6 +37,26 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    Aadhar: {
+        type: String,
+        required: true,
+    },
+    Pan: {
+        type: String,
+        required: true,
+    },
+    isApproved: {
+        type: Boolean,
+        default: false
+    },
+    Account_id: {
+        type: String,
+        default: null
+    },
+    Password: {
+        type: String,
+        default: null
+    }
 
 });
 

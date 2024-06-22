@@ -18,14 +18,14 @@ app.use(session({
 
 app.use('/userroutes', userRoutes);
 
-// Test Route
+
 app.get('/', (req, res) => {
     res.json({
         message: 'The API is working!'
     });
 });
 
-// Start Server
+
 app.listen(PORT, () => {
     console.log(`Server is running on PORT ${PORT}`);
 });

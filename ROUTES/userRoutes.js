@@ -4,12 +4,11 @@ const AccountId = require("../MODELS/AccountId"); // Assuming you have a separat
 const router = express.Router();
 const crypto = require('crypto');
 
-// Function to generate random password
 function generateRandomPassword(length) {
     return crypto.randomBytes(length).toString('hex');
 }
 
-// User Registration
+
 router.post('/register', async (req, res) => {
     try {
         const { FirstName, MiddleName, LastName, Telephone, MobileNumber, Email, State, City, Branch, Aadhar, Pan } = req.body;
@@ -57,27 +56,27 @@ router.post('/approve/:id', async (req, res) => {
             return res.status(400).json({ message: 'User is already approved' });
         }
 
-        // Get the latest account ID from AccountIds collection
+       
         const latestAccountId = await AccountId.findOne().sort({ id: -1 });
 
         let newAccountId = "ZBKIN202400001"; // Default initial value
 
         if (latestAccountId) {
-            // Increment the latest account ID
+          
             const currentIdNumber = parseInt(latestAccountId.id.slice(-6));
             const newIdNumber = currentIdNumber + 1;
             newAccountId = `ZBKIN2024${String(newIdNumber).padStart(6, '0')}`;
         }
 
-        // Generate a random password
+        
         const randomPassword = generateRandomPassword(8); // Length can be adjusted
 
-        // Update user data
+       
         user.isApproved = true;
         user.Account_id = newAccountId;
         user.Password = randomPassword;
 
-        // Save the new account ID back to the AccountIds collection
+        
         const accountId = new AccountId({ id: newAccountId });
         await accountId.save();
 

@@ -48,9 +48,6 @@ router.post('/approve/:id', async (req, res) => {
         const { id } = req.params;
         const user = await User.findById(id);
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
 
         if (user.isApproved) {
             return res.status(400).json({ message: 'User is already approved' });
@@ -59,7 +56,7 @@ router.post('/approve/:id', async (req, res) => {
        
         const latestAccountId = await AccountId.findOne().sort({ id: -1 });
 
-        let newAccountId = "ZBKIN202400001"; // Default initial value
+        let newAccountId = "ZBKIN202400001"; 
 
         if (latestAccountId) {
           
@@ -69,7 +66,7 @@ router.post('/approve/:id', async (req, res) => {
         }
 
         
-        const randomPassword = generateRandomPassword(8); // Length can be adjusted
+        const randomPassword = generateRandomPassword(8); 
 
        
         user.isApproved = true;
@@ -83,6 +80,29 @@ router.post('/approve/:id', async (req, res) => {
         await user.save();
 
         res.status(200).json({ message: 'User approved successfully', Account_id: newAccountId, Password: randomPassword });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
+router.post('/login', async (req, res) => {
+    try {
+        const { Account_id, Password } = req.body;
+
+       
+        const user = await User.findOne({ Account_id });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+       
+        if (user.Password !== Password) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        
+        res.status(200).json({ message: 'Login successful', user: { Account_id: user.Account_id, FirstName: user.FirstName, LastName: user.LastName } });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

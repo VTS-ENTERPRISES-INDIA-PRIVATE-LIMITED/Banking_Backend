@@ -15,17 +15,10 @@ const TransactionSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    Credit: {
-        type: String,
-        required:false
-    },
-    Debit: {
-        type: String,
-        required: false
-    },
     Status: {
         type: String,
-        required: false
+        required: false,
+        default: 'Pending'
     },
     Date: {
         type: Date,
@@ -33,21 +26,13 @@ const TransactionSchema = new mongoose.Schema({
     },
     Balance: {
         type: Number,
-        ref: "AccountId",
+        required: false
+    },
+    TransactionType: {
+        type: String,
         required: false,
-        default: 0
+        enum: ['Credit', 'Debit']
     }
-
 });
-
-TransactionSchema.pre("save", function (next) {
-    this.Balance = this.Balance - this.Amount;
-    this.Status = "Success";
-    if(this.Balance< this.Amount){
-        this.Status = "Failed";
-    }
-    next();
-});
-
 
 module.exports = mongoose.model("Transaction", TransactionSchema);

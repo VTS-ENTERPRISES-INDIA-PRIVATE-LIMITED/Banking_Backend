@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const userRoutes = require('./ROUTES/userRoutes');
+const adminRoutes = require('./ROUTES/adminRoutes');
 require('dotenv').config();
 require('./db');
 
@@ -17,6 +18,7 @@ app.use(session({
 }));
 
 app.use('/userroutes', userRoutes);
+app.use('/adminroutes', adminRoutes);
 
 
 app.get('/', (req, res) => {

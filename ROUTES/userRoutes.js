@@ -3,6 +3,7 @@ const User = require("../MODELS/User");
 const AccountId = require("../MODELS/AccountId"); // Assuming you have a separate model for AccountIds collection
 const router = express.Router();
 const crypto = require('crypto');
+const Transaction = require("../MODELS/Transaction");
 
 function generateRandomPassword(length) {
     return crypto.randomBytes(length).toString('hex');
@@ -13,7 +14,7 @@ router.post('/register', async (req, res) => {
     try {
         const { FirstName, MiddleName, LastName, Telephone, MobileNumber, Email, State, City, Branch, Aadhar, Pan } = req.body;
     
-        // Check if the email is already registered
+        
         const existingUser = await User.findOne({ Email });
         if (existingUser) {
             return res.status(400).json({ message: 'User is already registered with this email' });
@@ -86,6 +87,8 @@ router.post('/approve/:id', async (req, res) => {
 });
 
 
+
+
 router.post('/login', async (req, res) => {
     try {
         const { Account_id, Password } = req.body;
@@ -108,4 +111,132 @@ router.post('/login', async (req, res) => {
     }
 });
 
+router.put('/updatepassword/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { Password } = req.body;
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        user.Password = Password;
+        await user.save();
+        res.status(200).json({ message: 'Password updated successfully' });
+    } catch (err) { 
+        res.status(500).json({ message: err.message });
+    }
+});
+
+router.put('/updatebalance/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { balance } = req.body;
+        const account = await AccountId.findById(id);
+        if (!account) {
+            return res.status(404).json({ message: 'Account not found' });
+        }
+        account.balance = balance;
+        await account.save();
+        res.status(200).json({ message: 'Balance updated successfully' });
+    } catch (err) { 
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// router.post('/transaction', (req, res) => {
+//     try {
+//         const { SenderAccountId, ReceiverAccountId,Amount } = req.body;
+//         const transaction = new Transaction({
+//             SenderAccountId,
+//             ReceiverAccountId,
+//             Amount
+//         });
+//         transaction.save();
+//         res.status(200).json({ message: 'Transaction successful' });
+//     } catch (err) {
+//         res.status(500).json({ message: err.message });
+//     }
+// });
+
+router.post('/transaction', async (req, res) => {
+    try {
+        const { SenderAccountId, ReceiverAccountId, Amount } = req.body;
+        const transaction = new Transaction({
+            SenderAccountId,
+            ReceiverAccountId,
+            Amount
+        });
+
+        const senderAccount = await AccountId.findOne({"id" : SenderAccountId});
+        const receiverAccount = await AccountId.findOne({"id" :ReceiverAccountId});
+
+       
+        if (!senderAccount || !receiverAccount) {
+            return res.status(404).json({ message: 'Account not found' });
+        }
+
+    
+        if (senderAccount.balance < transaction.Amount) {
+            return res.status(400).json({ message: 'Insufficient balance' });
+        }
+        
+        senderAccount.balance -= Amount;
+        await senderAccount.save();
+
+        receiverAccount.balance += Amount;
+        await receiverAccount.save();
+
+        await transaction.save();
+
+        res.status(200).json({ message: 'Transaction successful' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
+// router.get('useraccount/:accountid', async (req, res) => {
+//     try {
+//         const { accountid } = req.params;
+//         const user = await User.findOne({ Account_id: accountid });
+//         if (!user) {
+//             return res.status(404).json({ message: 'User not found' });
+//         }
+//         res.status(200).json({ user });
+//     } catch (err) {
+//         res.status(500).json({ message: err.message });
+//     }
+// });
+
+router.get('/useraccount/:accountid', async (req, res) => {
+    try {
+        const { accountid } = req.params;
+
+        const user = await User.findOne({ Account_id: accountid });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const transactions = await Transaction.find({ SenderAccountId: accountid });
+
+        const account = await AccountId.findOne({ id: accountid });
+        if (!account) {
+            return res.status(404).json({ message: 'Account not found' });
+        }
+
+        res.status(200).json({ user, transactions, balance: account.balance });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
+router.get('/allaccountids', async (req, res) => {
+    try {
+        const accounts = await AccountId.find();
+        res.status(200).json({ accounts });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 module.exports = router;

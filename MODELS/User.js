@@ -15,11 +15,12 @@ const UserSchema = new mongoose.Schema({
     },
     Telephone: {
         type: String,
-        required: true,
+        required: false,
     },
     MobileNumber:{
         type: String,
-        required: false,
+        required: true,
+        length: 10
     },
     Email: {
         type: String,
@@ -53,12 +54,18 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    Balance: {
+        type: Number,
+        default: 500,
+        required:false
+    },
     Password: {
         type: String,
         default: null
     }
 
 });
+
 
 
 module.exports = mongoose.model("User", UserSchema);

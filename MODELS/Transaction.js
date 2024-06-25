@@ -32,6 +32,10 @@ const TransactionSchema = new mongoose.Schema({
         type: String,
         required: false,
         enum: ['Credit', 'Debit']
+    },
+    Summary: {
+        type: String,
+        required: false
     }
 });
 

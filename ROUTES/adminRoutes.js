@@ -25,8 +25,7 @@ router.post('/approve/:id', async (req, res) => {
         
         const latestAccountId = await AccountId.findOne().sort({ id: -1 });
 
-        let newAccountId = "ZBKIN202400001"; // Default initial value
-
+        let newAccountId = "ZBKIN202400001"; 
         if (latestAccountId) {
             
             const currentIdNumber = parseInt(latestAccountId.id.slice(-6)); 
@@ -35,8 +34,7 @@ router.post('/approve/:id', async (req, res) => {
         }
 
         
-        const randomPassword = generateRandomPassword(8); // Length can be adjusted
-
+        const randomPassword = generateRandomPassword(8); 
        
         user.isApproved = true;
         user.Account_id = newAccountId;

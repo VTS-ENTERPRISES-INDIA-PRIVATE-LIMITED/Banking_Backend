@@ -105,16 +105,16 @@ router.post('/transaction', async (req, res) => {
     try {
         const { SenderAccountId, ReceiverAccountId, Amount } = req.body;
 
-        const senderAccount = await AccountId.findOne({ id: SenderAccountId });
-        const receiverAccount = await AccountId.findOne({ id: ReceiverAccountId });
+        const senderAccount = await User.findOne({ Account_id: SenderAccountId });
+        const receiverAccount = await User.findOne({ Account_id: ReceiverAccountId });
 
         if (!senderAccount || !receiverAccount) {
             return res.status(404).json({ message: 'Account not found' });
         }
 
-        let transactionStatus = 'Success';
-        if (senderAccount.balance < Amount) {
-            transactionStatus = 'Failed';
+        let transactionStatus = 'Transaction Success';
+        if (senderAccount.Balance < Amount) {
+            transactionStatus = 'Transaction Failed';
             const failedTransaction = new Transaction({
                 SenderAccountId,
                 ReceiverAccountId,
@@ -126,8 +126,8 @@ router.post('/transaction', async (req, res) => {
             return res.status(400).json({ message: 'Insufficient balance', transaction: failedTransaction });
         }
 
-        senderAccount.balance -= Amount;
-        receiverAccount.balance += Amount;
+        senderAccount.Balance -= Amount;
+        receiverAccount.Balance += Amount;
 
         await senderAccount.save();
         await receiverAccount.save();
@@ -137,7 +137,7 @@ router.post('/transaction', async (req, res) => {
             ReceiverAccountId,
             Amount,
             Status: transactionStatus,
-            Balance: senderAccount.balance,
+            Balance: senderAccount.Balance,
             TransactionType: 'Debit'
         });
 
@@ -146,7 +146,7 @@ router.post('/transaction', async (req, res) => {
             ReceiverAccountId,
             Amount,
             Status: transactionStatus,
-            Balance: receiverAccount.balance,
+            Balance: receiverAccount.Balance,
             TransactionType: 'Credit'
         });
 
@@ -164,5 +164,46 @@ router.post('/transaction', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+
+router.route("/recharges").post((req,res)=>{
+    const acid = req.body.AccountId
+    const amt = req.body.Amount
+    User.findOne({Account_id : acid})
+    .then((user)=>{
+        const balance = user.Balance
+        if(balance < amt){
+            const newTransaction = new Transaction({
+                SenderAccountId : acid,
+                ReceiverAccountId : "Zigmanetwork provider",
+                Amount : amt,
+                Status : "Recharge Failed",
+                Balance : balance,
+                TransactionType : "Debit"
+            })
+            newTransaction.save()
+            .catch((err)=>{
+                console.log(err)
+            })
+            res.status(400).json({message : "Insufficient Balance"})
+        }
+        else{
+            user.Balance -= amt
+            user.save()
+            const newTransaction = new Transaction({
+                SenderAccountId : acid,
+                ReceiverAccountId : "Zigmanetwork provider",
+                Amount : amt,
+                Status : "Recharge Success",
+                Balance : user.Balance,
+                TransactionType : "Debit"
+            })
+            newTransaction.save()
+            .catch((err)=>{
+                console.log(err)
+            })
+            res.status(200).json({message : "Recharge Successful"})
+        }
+    })
+})
 
 module.exports = router;

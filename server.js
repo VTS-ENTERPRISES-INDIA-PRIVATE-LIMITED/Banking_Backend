@@ -21,8 +21,6 @@ app.use(session({
 app.use('/userroutes', userRoutes);
 app.use('/adminroutes', adminRoutes);
 
-app.use(ConfirmationMailService);
-
 
 app.get('/', (req, res) => {
     res.json({

@@ -1,18 +1,18 @@
 const mailSender = require("./MailService")
 
-const sendLoginCredentialsMail = (userdata)=>{
+const sendLoginCredentialsMail = (user)=>{
     const sendLoginCredentials = async (mailbody) => {
         const info = await mailSender.sendMail({
           from: "teamzigmabank04@gmail.com",
-          to: "gantamohan.556@gmail.com",
+          to: user.Email,
           subject: "Your ZIGMA BANK Account is Ready!!!",
           html: mailbody,
         })
         console.log("mail sent", info.response)
       }
-      const username = "Mohan Ganta"
-      const email = "gantamohan.556@gmail.com"
-      const AcId = "ZBKIN2025XXXXX"
+      const username = `${user.FirstName} ${user.LastName}`
+      const email = user.Email
+      const AcId = user.Account_id
       const loginurl = "www.google.com"
       const reseturl = "www.youtube.com"
       const mailbody = `

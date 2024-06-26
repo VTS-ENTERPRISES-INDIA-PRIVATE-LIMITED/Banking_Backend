@@ -9,9 +9,11 @@ const mailSender = nodemailer.createTransport(
   }
 )
 const sendConfirmationMail = (username,email)=>{
+  console.log("username",username)
+  console.log("email",email)
     const sendConfirmation = async (mailbody) => {
         const info = await mailSender.sendMail({
-          from: "teamzigmabank04@gmail.com",
+          from: "zigmabank@gmail.com",
           to: email,
           subject: "Welcome to ZIGMA BANK! Your Registration is Succesful",
           html: mailbody,

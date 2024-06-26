@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const AccountId = require("../MODELS/AccountId");
 const router = express.Router();
 const Transaction = require("../MODELS/Transaction");
-
+const sendCredentials = require("../EmailServiceModule/SendLoginCredentialsMailService")
 function generateRandomPassword(length) {
     return crypto.randomBytes(length).toString('hex');
 }
@@ -50,7 +50,7 @@ router.post('/approve/:id', async (req, res) => {
         await accountId.save();
 
         await user.save();
-
+        sendCredentials(user)
         res.status(200).json({ message: 'User approved successfully', Account_id: newAccountId, Password: randomPassword });
     } catch (err) {
         res.status(500).json({ message: err.message });

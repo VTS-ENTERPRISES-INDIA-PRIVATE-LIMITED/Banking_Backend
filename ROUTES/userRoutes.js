@@ -11,7 +11,7 @@ function generateRandomPassword(length) {
 
 router.post('/register', async (req, res) => {
     try {
-        const { FirstName, MiddleName, LastName, Telephone, MobileNumber, Email, State, City, Branch, Aadhar, Pan } = req.body;
+        const { FirstName, MiddleName, LastName, Telephone, MobileNumber, Email, State, City, Branch,Pincode,Country,Aadhar, Pan } = req.body;
 
         const existingUser = await User.findOne({ Email });
         if (existingUser) {
@@ -28,6 +28,8 @@ router.post('/register', async (req, res) => {
             State,
             City,
             Branch,
+            Pincode,
+            Country,
             Aadhar: `https://zigmabank.com/${Aadhar}`,
             Pan: `https://zigmabank.com/${Pan}`,
             isApproved: false

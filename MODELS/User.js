@@ -39,7 +39,7 @@ const UserSchema = new mongoose.Schema({
         required: true,
     },
     Pincode: {
-        type: String,
+        type: Number,
         required: true,
     },
     Country: {
@@ -64,7 +64,7 @@ const UserSchema = new mongoose.Schema({
     },
     Balance: {
         type: Number,
-        default: 500,
+        default: 0,
         required:false
     },
     Password: {

@@ -33,10 +33,15 @@ router.post('/approve/:id', async (req, res) => {
             newAccountId = `ZBKIN202${String(newIdNumber).padStart(6, '0')}`;
         }
 
+        if(user.isApproved==true){
+            return Balance = 500;
+        }
+
         
         const randomPassword = generateRandomPassword(8); 
        
         user.isApproved = true;
+        user.Balance = 500;
         user.Account_id = newAccountId;
         user.Password = randomPassword;
 
@@ -87,5 +92,38 @@ router.get('/allaccountids', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+router.get('/summary', async (req, res) => {
+    try {
+        const transactions = await Transaction.find();
+        const users = await User.find();
+        const accounts = await AccountId.find();
+        let TotalAccounts = 0;
+        let TotalBalance = 0;
+        let TotalCredits = 0;
+        let TotalDebits = 0;
+
+        for (const transaction of transactions) {
+            if (transaction.TransactionType === 'Credit') {
+                TotalCredits++;
+            } else if (transaction.TransactionType === 'Debit') {
+                TotalDebits++;
+            }
+        }
+
+        for (const user of users) {
+            TotalBalance += user.Balance;
+        }
+
+        for (const account of accounts) {
+            TotalAccounts++;
+        }
+
+        res.status(200).json({ TotalAccounts,TotalBalance, TotalCredits, TotalDebits });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
 
 module.exports = router;

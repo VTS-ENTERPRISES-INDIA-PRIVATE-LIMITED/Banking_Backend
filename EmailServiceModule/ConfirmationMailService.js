@@ -29,11 +29,11 @@ const sendConfirmationMail = (username,email)=>{
             <p>Our team will now begin the process of verifying the documents you submitted. This is to ensure all information provided is accurate and secure.</p>
             <p>Once the document verification is complete, you will receive your login credentials via email. These credentials will allow you to access your account through our website.</p>
             <p style='margin-top:20px;'>We are excited to have you on board and look forward to serving you. </p>
-            <p>Welcome to the <strong>ZIGMA BANK family!</strong> </p>
-            <p style='margin-top:60px;'>Best regards,</p>
-            <p>Zigma Bank customer Support Team</p>
+            <p>Welcome to the <strong>ZIGMA BANK Family!</strong> </p>
+            <p style='margin-top:60px;'>Best Regards,</p>
+            <p>Zigma Bank Customer Support Team</p>
             <p>teamzigmabank@gmail.com</p>
-            <p>+91 xxxxxxxxx</p>
+            <p>+91 8000880088</p>
             <p><strong>ZIGMA BANK</strong></p>
             <p><i>This is an automated message. Please do not reply to this email.</i></p>
         </div>

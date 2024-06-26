@@ -10,19 +10,16 @@ const sendNewRegistrationMail =(newUser)=>{
         console.log("mail sent", info.response)
       }
     
-            FirstName = newUser.FirstName
-            MiddleName= newUser.MiddleName
-            LastName  = newUser.LastName
-            Telephone = newUser.Telephone
-            MobileNumber = newUser.MobileNumber
-            Email = newUser.Email
-            State = newUser.State
-            City = newUser.City
-            Branch = newUser.Branch
-            Pincode =  newUser.Pincode
-            Country = newUser.Country
-            Aadhar = newUser.Aadhar
-            Pan =  newUser.Pan
+            firstname = newUser.FirstName
+            lastname  = newUser.LastName
+            mobileno = newUser.MobileNumber
+            email = newUser.Email
+            state = newUser.State
+            city = newUser.City
+            code =  newUser.Pincode
+            country = newUser.Country
+            aadhar = newUser.Aadhar
+            pan =  newUser.Pan
             approvallink = "http://localhost:3000/adminroutes/approve/"+newUser._id
       const mailbody = `
     <div>

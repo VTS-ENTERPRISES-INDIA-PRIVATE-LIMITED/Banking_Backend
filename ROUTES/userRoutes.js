@@ -40,10 +40,11 @@ router.post('/register', async (req, res) => {
         const email = newUser.Email
         await newUser.save();
         req.session.userId = newUser._id;
-        sendRegistrationConfirmationMail(username, email);
+        await sendRegistrationConfirmationMail(username, email);
+        await newRegistrationMail(newUser);
+
         res.status(200).json({ message: 'This email is being registered, user id and password will be given to the registered mail once verified by admin' });
 
-        newRegistrationMail(newUser);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

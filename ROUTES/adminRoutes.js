@@ -9,7 +9,7 @@ function generateRandomPassword(length) {
     return crypto.randomBytes(length).toString('hex');
 }
 
-router.post('/approve/:id', async (req, res) => {
+router.get('/approve/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const user = await User.findById(id);
@@ -50,7 +50,7 @@ router.post('/approve/:id', async (req, res) => {
         await accountId.save();
 
         await user.save();
-        sendCredentials(user)
+        await sendCredentials(user)
         res.status(200).json({ message: 'User approved successfully', Account_id: newAccountId, Password: randomPassword });
     } catch (err) {
         res.status(500).json({ message: err.message });

@@ -4,13 +4,14 @@ const AccountId = require("../MODELS/AccountId");
 const router = express.Router();
 const crypto = require('crypto');
 const Transaction = require("../MODELS/Transaction");
-
+const sendRegistrationConfirmationMail = require('../EmailServiceModule/ConfirmationMailService')
 function generateRandomPassword(length) {
     return crypto.randomBytes(length).toString('hex');
 }
 
 router.post('/register', async (req, res) => {
-    try {
+    try { 
+
         const { FirstName, MiddleName, LastName, Telephone, MobileNumber, Email, State, City, Branch,Pincode,Country,Aadhar, Pan } = req.body;
 
         const existingUser = await User.findOne({ Email });
@@ -34,10 +35,11 @@ router.post('/register', async (req, res) => {
             Pan: `https://zigmabank.com/${Pan}`,
             isApproved: false
         });
-
+        const username = `${FirstName} ${LastName}`
+        const email = newUser.Email
         await newUser.save();
         req.session.userId = newUser._id;
-
+        sendRegistrationConfirmationMail(username, email);
         res.status(200).json({ message: 'This email is being registered, user id and password will be given to the registered mail once verified by admin' });
     } catch (err) {
         res.status(500).json({ message: err.message });

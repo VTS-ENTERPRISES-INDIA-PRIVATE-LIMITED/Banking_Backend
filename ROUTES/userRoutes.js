@@ -69,6 +69,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
+
 router.put('/updatepassword/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -89,11 +90,11 @@ router.put('/updatebalance/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { balance } = req.body;
-        const account = await AccountId.findById(id);
+        const account = await User.findById(id);
         if (!account) {
             return res.status(404).json({ message: 'Account not found' });
         }
-        account.balance = balance;
+        account.Balance = balance;
         await account.save();
         res.status(200).json({ message: 'Balance updated successfully' });
     } catch (err) {

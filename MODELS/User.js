@@ -38,6 +38,14 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    Pincode: {
+        type: String,
+        required: true,
+    },
+    Country: {
+        type: String,
+        required: true,
+    },
     Aadhar: {
         type: String,
         required: true,

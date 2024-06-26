@@ -30,7 +30,7 @@ router.post('/approve/:id', async (req, res) => {
             
             const currentIdNumber = parseInt(latestAccountId.id.slice(-6)); 
             const newIdNumber = currentIdNumber + 1;
-            newAccountId = `ZBKIN2024${String(newIdNumber).padStart(6, '0')}`;
+            newAccountId = `ZBKIN202${String(newIdNumber).padStart(6, '0')}`;
         }
 
         

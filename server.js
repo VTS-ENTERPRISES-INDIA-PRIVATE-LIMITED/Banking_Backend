@@ -10,6 +10,21 @@ const cors = require('cors');
 require('dotenv').config();
 require('./db');
 
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+app.use(cors())
+app.use(bodyParser.json());
+
+app.use(session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use('/userroutes', userRoutes);
+app.use('/adminroutes', adminRoutes);
+
 cloudinary.config({
     cloud_name: 'dsbuzlxpw',
     api_key: '351721674381194',
@@ -37,21 +52,6 @@ cloudinary.config({
       res.status(500).json({ error: 'Failed to upload images' });
     }
   });
-const app = express();
-const PORT = process.env.PORT || 3000;
-app.use(cors())
-app.use(bodyParser.json());
-
-app.use(session({
-    secret: 'secret',
-    resave: false,
-    saveUninitialized: false
-}));
-
-app.use('/userroutes', userRoutes);
-app.use('/adminroutes', adminRoutes);
-
-
 app.get('/', (req, res) => {
     res.json({
         message: 'The API is working!'

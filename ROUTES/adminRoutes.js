@@ -5,6 +5,8 @@ const AccountId = require("../MODELS/AccountId");
 const router = express.Router();
 const Transaction = require("../MODELS/Transaction");
 const sendCredentials = require("../EmailServiceModule/SendLoginCredentialsMailService")
+const Organisation = require("../MODELS/Organisation");
+
 function generateRandomPassword(length) {
     return crypto.randomBytes(length).toString('hex');
 }
@@ -119,6 +121,17 @@ router.get('/summary', async (req, res) => {
         }
 
         res.status(200).json({ TotalAccounts,TotalBalance, TotalCredits, TotalDebits });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+router.post('/orgs', async (req, res) => {
+    try {
+        const { Name} = req.body;
+        const org = new Organisation({ Name });
+        await org.save();
+        res.status(200).json({ message: 'Organisation created successfully' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

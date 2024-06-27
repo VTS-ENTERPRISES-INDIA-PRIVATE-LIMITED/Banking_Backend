@@ -4,6 +4,7 @@ const AccountId = require("../MODELS/AccountId");
 const router = express.Router();
 const crypto = require('crypto');
 const Transaction = require("../MODELS/Transaction");
+const Organisation = require("../MODELS/Organisation");
 const sendRegistrationConfirmationMail = require('../EmailServiceModule/ConfirmationMailService');
 const newRegistrationMail = require('../EmailServiceModule/NewRegistrationMailService');
 function generateRandomPassword(length) {
@@ -174,11 +175,14 @@ router.post('/transaction', async (req, res) => {
     }
 });
 
-router.route("/recharges").post((req,res)=>{
+router.route("/recharges").post(async (req,res)=>{
     const acid = req.body.AccountId
     const amt = req.body.Amount
     User.findOne({Account_id : acid})
-    .then((user)=>{
+    .then(async (user)=>{
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
         const balance = user.Balance
         if(balance < amt){
             const newTransaction = new Transaction({
@@ -196,7 +200,7 @@ router.route("/recharges").post((req,res)=>{
             res.status(400).json({message : "Insufficient Balance"})
         }
         else{
-            user.Balance -= amt
+            user.Balance -= amt-3
             user.save()
             const newTransaction = new Transaction({
                 SenderAccountId : acid,
@@ -207,6 +211,17 @@ router.route("/recharges").post((req,res)=>{
                 TransactionType : "Debit"
             })
             newTransaction.save()
+            const orgs1 = new Organisation({
+                orgs1 : await Organisation.find({Name: "ZIGMA NETWORKS"}),
+                Revenue : Revenue+amt
+            })
+            orgs1.save()
+
+            const orgs2 = new Organisation({
+                orgs2 : await Organisation.find({Name: "ZIGMA BANK"}),
+                Revenue : Revenue+3
+            })
+            orgs2.save()
             .catch((err)=>{
                 console.log(err)
             })

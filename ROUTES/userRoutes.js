@@ -51,10 +51,10 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.post('/login', async (req, res) => {
+router.route('/login/:acid/:pwd').get( async (req, res) => {
     try {
-        const { Account_id, Password } = req.body;
-
+        const Account_id = req.params.acid
+        const Password = req.params.pwd
         const user = await User.findOne({ Account_id });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -74,7 +74,7 @@ router.post('/login', async (req, res) => {
             }
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        res.status(500).json({ message: "hey bhayya avvatledhu" });
     }
 });
 

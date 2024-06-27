@@ -21,7 +21,7 @@ const sendLoginCredentialsMail = (user)=>{
             <p>Dear ${username},</p>
             <p>We are pleased to inform you that the verification of your submitted documents has been successfully completed. Welcome to <strong>ZIGMA BANK family!</strong></p>
             <p>As part of this process, we have created your account and assigned you the following account ID: </p>
-            <p><strong>Account ID: ${AcId}</strong></p>
+            <p><strong>Account ID: ${Account_Id}</strong></p>
             <p><h4>Your Login credentials</h4></p>
             <p><strong>Account ID : ${Account_Id}</strong></p>
             <p><strong>Password : ${password}</strong></p>

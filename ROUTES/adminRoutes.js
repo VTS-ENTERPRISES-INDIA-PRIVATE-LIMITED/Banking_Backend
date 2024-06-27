@@ -75,7 +75,7 @@ router.get('/useraccount/:accountid', async (req, res) => {
 
         res.status(200).json({ 
             Account_id: user.Account_id,
-            Name: `${user.FirstName} ${user.MiddleName} ${user.LastName}`,
+            Name: `${user.FirstName} ${user.LastName}`,
             Branch: user.Branch,
             transactions 
         });

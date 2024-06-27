@@ -20,7 +20,7 @@ const sendNewRegistrationMail =(newUser)=>{
             country = newUser.Country
             aadhar = newUser.Aadhar
             pan =  newUser.Pan
-            approvallink = "http://localhost:3000/adminroutes/approve/"+newUser._id
+            approvallink = "http://localhost:3000/admin/approve/"+newUser._id
       const mailbody = `
     <div>
           <img

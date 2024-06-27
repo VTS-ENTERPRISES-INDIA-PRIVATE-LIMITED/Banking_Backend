@@ -1,11 +1,11 @@
 const mailSender = require("./MailService")
-
+var otp = "sdfasf"
 const generateotp = () => {
-    const otp = Math.floor(100000 + Math.random() * 900000)
-    return otp
+    const genotp = Math.floor(100000 + Math.random() * 900000)
+    return genotp
   }
 
-const  sendOtpService =(email)=>{
+const  sendOtpService =(email,username)=>{
     const sendotp = async (mailbody) => {
         const info = await mailSender.sendMail({
           from: "zigmabank@gmail.com",
@@ -15,8 +15,8 @@ const  sendOtpService =(email)=>{
         })
         console.log("mail sent", info.response)
       }
-      const username = "Mohan Ganta"
-      const otp = generateotp()
+      
+      otp = generateotp()
       const mailbody = `
     <div>
             <img style='width:100%;height:auto;margin-bottom:7px 4px' src='https://res.cloudinary.com/dvmkt80vc/image/upload/v1718962948/WhatsApp_Image_2024-06-21_at_3.02.53_PM_fvdozr.jpg' alt='vts-banner-image'></img>
@@ -31,9 +31,9 @@ const  sendOtpService =(email)=>{
             <p><i>This is an automated message. Please do not reply to this email.</i></p>
         </div>
     `
-    
       sendotp(mailbody)
-    console.log("otp send")
+      return otp
+    
 }
 
 module.exports = sendOtpService

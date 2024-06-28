@@ -182,7 +182,7 @@ router.post('/transaction', async (req, res) => {
 });
 
 router.route("/recharges").post(async (req, res) => {
-    const acid = req.body.AccountId;
+    const acid = req.body.SenderAccountId;
     const amt = req.body.Amount;
     const platformFee = 3;
     const totalAmount = amt + platformFee;

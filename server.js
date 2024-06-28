@@ -3,7 +3,10 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const userRoutes = require('./ROUTES/userRoutes');
 const adminRoutes = require('./ROUTES/adminRoutes');
-const sendRegisterOtp = require("./EmailServiceModule/OtpSerivce")
+const sendRegisterOtp = require("./EmailServiceModule/OtpSerivce");
+const paymentMail = require("./EmailServiceModule/PaymentSalaryMail");
+const OrgTransaction = require("./MODELS/OrgTransaction");
+const User = require("./MODELS/User");
 const cors = require('cors');
 require('dotenv').config();
 require('./db');
@@ -34,6 +37,17 @@ app.get("/sendregisterotp/:email/:user",async (req,res)=>{
   console.log(otp)
   res.send({"otp":otp})
 })
+
+app.get("/salary/:id", async (req, res) => {
+    const id = req.params.id;
+    const transaction = await OrgTransaction.findById(id);
+    const receiver = await User.findOne({ Account_id: transaction.ReceiverAccountId });
+    transaction.TransactionType = "Credit";
+    transaction.Status = "Success";
+    await paymentMail(transaction, receiver.Email);
+    res.send({"message":"success"})
+    
+  })
 
 
 app.listen(PORT, () => {

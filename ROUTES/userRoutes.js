@@ -7,14 +7,16 @@ const Transaction = require("../MODELS/Transaction");
 const Organisation = require("../MODELS/Organisation");
 const sendRegistrationConfirmationMail = require('../EmailServiceModule/ConfirmationMailService');
 const newRegistrationMail = require('../EmailServiceModule/NewRegistrationMailService');
+const debitTransactionMail = require('../EmailServiceModule/PaymentDebitMail');
+const creditTransactionMail = require('../EmailServiceModule/PaymentCreditMail');
+
 function generateRandomPassword(length) {
     return crypto.randomBytes(length).toString('hex');
 }
 
 router.post('/register', async (req, res) => {
     try { 
-
-        const { FirstName, MiddleName, LastName, Telephone, MobileNumber, Email, State, City, Branch,Pincode,Country,Aadhar, Pan } = req.body;
+        const { FirstName, MiddleName, LastName, Telephone, MobileNumber, Email, State, City, Branch, Pincode, Country, Aadhar, Pan } = req.body;
 
         const existingUser = await User.findOne({ Email });
         if (existingUser) {
@@ -51,7 +53,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.route('/login/:acid/:pwd').get( async (req, res) => {
+router.route('/login/:acid/:pwd').get(async (req, res) => {
     try {
         const Account_id = req.params.acid
         const Password = req.params.pwd
@@ -77,7 +79,6 @@ router.route('/login/:acid/:pwd').get( async (req, res) => {
         res.status(500).json({ message: "hey bhayya avvatledhu" });
     }
 });
-
 
 router.put('/updatepassword/:id', async (req, res) => {
     try {
@@ -117,12 +118,12 @@ router.post('/transaction', async (req, res) => {
 
         const senderAccount = await User.findOne({ Account_id: SenderAccountId });
         const receiverAccount = await User.findOne({ Account_id: ReceiverAccountId });
-
+        
         if (!senderAccount || !receiverAccount) {
             return res.status(404).json({ message: 'Account not found' });
         }
 
-        let transactionStatus = 'Transaction Success';
+        let transactionStatus = 'Success';
         if (senderAccount.Balance < Amount) {
             transactionStatus = 'Transaction Failed';
             const failedTransaction = new Transaction({
@@ -148,8 +149,10 @@ router.post('/transaction', async (req, res) => {
             Amount,
             Status: transactionStatus,
             Balance: senderAccount.Balance,
-            TransactionType: 'Debit'
+            TransactionType: 'Debit',
         });
+
+        await debitTransactionMail(debitTransaction, senderAccount.Email);
 
         const creditTransaction = new Transaction({
             SenderAccountId,
@@ -159,6 +162,9 @@ router.post('/transaction', async (req, res) => {
             Balance: receiverAccount.Balance,
             TransactionType: 'Credit'
         });
+
+        await creditTransactionMail(creditTransaction, receiverAccount.Email);
+
 
         await debitTransaction.save();
         await creditTransaction.save();
@@ -175,59 +181,56 @@ router.post('/transaction', async (req, res) => {
     }
 });
 
-router.route("/recharges").post(async (req,res)=>{
-    const acid = req.body.AccountId
-    const amt = req.body.Amount
-    User.findOne({Account_id : acid})
-    .then(async (user)=>{
+router.route("/recharges").post(async (req, res) => {
+    const acid = req.body.AccountId;
+    const amt = req.body.Amount;
+    const platformFee = 3;
+    const totalAmount = amt + platformFee;
+
+    try {
+        const user = await User.findOne({ Account_id: acid });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        const balance = user.Balance
-        if(balance < amt){
+        
+        if (user.Balance < totalAmount) {
             const newTransaction = new Transaction({
-                SenderAccountId : acid,
-                ReceiverAccountId : "Zigmanetwork provider",
-                Amount : amt,
-                Status : "Recharge Failed",
-                Balance : balance,
-                TransactionType : "Debit"
-            })
-            newTransaction.save()
-            .catch((err)=>{
-                console.log(err)
-            })
-            res.status(400).json({message : "Insufficient Balance"})
+                SenderAccountId: acid,
+                ReceiverAccountId: "Zigmanetwork provider",
+                Amount: amt,
+                Status: "Recharge Failed",
+                Balance: user.Balance,
+                TransactionType: "Debit"
+            });
+            await newTransaction.save();
+            return res.status(400).json({ message: "Insufficient Balance" });
         }
-        else{
-            user.Balance -= amt-3
-            user.save()
-            const newTransaction = new Transaction({
-                SenderAccountId : acid,
-                ReceiverAccountId : "Zigmanetwork provider",
-                Amount : amt,
-                Status : "Recharge Success",
-                Balance : user.Balance,
-                TransactionType : "Debit"
-            })
-            newTransaction.save()
-            const orgs1 = new Organisation({
-                orgs1 : await Organisation.find({Name: "ZIGMA NETWORKS"}),
-                Revenue : Revenue+amt
-            })
-            orgs1.save()
 
-            const orgs2 = new Organisation({
-                orgs2 : await Organisation.find({Name: "ZIGMA BANK"}),
-                Revenue : Revenue+3
-            })
-            orgs2.save()
-            .catch((err)=>{
-                console.log(err)
-            })
-            res.status(200).json({message : "Recharge Successful"})
-        }
-    })
-})
+        user.Balance -= totalAmount;
+        await user.save();
+
+        const newTransaction = new Transaction({
+            SenderAccountId: acid,
+            ReceiverAccountId: "Zigmanetwork provider",
+            Amount: amt,
+            Status: "Recharge Success",
+            Balance: user.Balance,
+            TransactionType: "Debit"
+        });
+        await newTransaction.save();
+
+        const orgNetwork = await Organisation.findOne({ Name: "ZIGMA NETWORKS" });
+        orgNetwork.Revenue += amt;
+        await orgNetwork.save();
+
+        const orgBank = await Organisation.findOne({ Name: "ZIGMA BANK" });
+        orgBank.Revenue += platformFee;
+        await orgBank.save();
+
+        res.status(200).json({ message: "Recharge Successful" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
 module.exports = router;

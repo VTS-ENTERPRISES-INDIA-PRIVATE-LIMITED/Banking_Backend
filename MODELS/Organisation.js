@@ -6,11 +6,15 @@ const OrganisationSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    Account_id :{
+        type:String,
+        required:true
+    },
        Revenue:{
         type: Number,
         required: false,
         default: 1000000000
-    }
+    },
 
 });
 

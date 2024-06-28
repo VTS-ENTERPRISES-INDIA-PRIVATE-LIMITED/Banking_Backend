@@ -79,6 +79,9 @@ router.get('/useraccount/:accountid', async (req, res) => {
             Account_id: user.Account_id,
             Name: `${user.FirstName} ${user.LastName}`,
             Branch: user.Branch,
+            Email  : user.Email,
+            Address : `${user.City} , ${user.State} , ${user.Pincode}`,
+            Balance : user.Balance,
             transactions 
         });
     } catch (err) {

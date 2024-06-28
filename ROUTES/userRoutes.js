@@ -220,7 +220,7 @@ router.route("/recharges").post(async (req, res) => {
         await newTransaction.save();
 
         const orgNetwork = await Organisation.findOne({ Name: "ZIGMA NETWORKS" });
-        orgNetwork.Revenue += amt;
+        orgNetwork.Revenue += amt-3;
         await orgNetwork.save();
 
         const orgBank = await Organisation.findOne({ Name: "ZIGMA BANK" });

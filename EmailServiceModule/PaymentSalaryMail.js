@@ -58,7 +58,7 @@ const sendPaymentReceiptMail = (transaction,mail,name) => {
         </tr>
         <tr>
           <td style="border: 1px solid black;padding: 10px;text-align: start;">Transaction ID</td>
-          <td style="border: 1px solid black;padding: 10px;text-align: start;">TR${TransactionId}</td>
+          <td style="border: 1px solid black;padding: 10px;text-align: start;">TXN${TransactionId}</td>
         </tr>
         <tr>
           <td style="border: 1px solid black;padding: 10px;text-align: start;">Sender Account No</td>

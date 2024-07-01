@@ -68,7 +68,7 @@ const zigma = await organisation.findOne({Account_id:"ZBKINORG000322"})
     for(var i=0;i<salaryData.length;i++)
     {
         console.log(`Performing transaction for account ${salaryData[i].Account_id} with amount ${salaryData[i].NetPay}`);
-        // await sendSalaryToemployee(salaryData[i],org,zigma)
+        await sendSalaryToemployee(salaryData[i],org,zigma)
         console.log(`Transaction ${i+1} is Successful`)
         const totalSalary = salaryData.reduce((acc, row) => acc + (row.NetPay || 0), 0);
         const availableRevenuBal = org.Revenue

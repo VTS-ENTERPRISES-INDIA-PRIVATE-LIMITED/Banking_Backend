@@ -5,6 +5,10 @@ const userRoutes = require('./ROUTES/userRoutes');
 const adminRoutes = require('./ROUTES/adminRoutes');
 const sendRegisterOtp = require("./EmailServiceModule/OtpSerivce")
 const paymentOtp = require("./EmailServiceModule/PaymentOtpService")
+const sendRegisterOtp = require("./EmailServiceModule/OtpSerivce");
+const paymentMail = require("./EmailServiceModule/PaymentSalaryMail");
+const OrgTransaction = require("./MODELS/OrgTransaction");
+const User = require("./MODELS/User");
 const cors = require('cors');
 require('dotenv').config();
 require('./db');
@@ -39,6 +43,17 @@ app.get("/sendpaymentotp/:email/:username",async (req,res)=>{
      const otp =  await paymentOtp(req.params.email,req.params.user)
     res.send({"otp":otp})
   })
+app.get("/salary/:id", async (req, res) => {
+    const id = req.params.id;
+    const transaction = await OrgTransaction.findById(id);
+    const receiver = await User.findOne({ Account_id: transaction.ReceiverAccountId });
+    transaction.TransactionType = "Credit";
+    transaction.Status = "Success";
+    await paymentMail(transaction, receiver.Email);
+    res.send({"message":"success"})
+    
+  })
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on PORT ${PORT}`);

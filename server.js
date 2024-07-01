@@ -40,8 +40,8 @@ app.get("/sendregisterotp/:email/:user",async (req,res)=>{
   res.send({"otp":otp})
 })
 
-app.get("/sendpaymentotp/:email/:username",async (req,res)=>{
-     const otp =  await paymentOtp(req.params.email,req.params.username)
+app.get("/sendpaymentotp/:email/:username/:amount",async (req,res)=>{
+     const otp =  await paymentOtp(req.params.email,req.params.username,req.params.amount)
     res.send({"otp":otp})
   })
 app.get("/salary/:id", async (req, res) => {

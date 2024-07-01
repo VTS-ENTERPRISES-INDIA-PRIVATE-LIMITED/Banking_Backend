@@ -87,7 +87,7 @@ const sendPaymentReceiptMail = (debitTransaction,mail) => {
         </tr>
         <tr>
           <th style="font-weight: bold; border: 1px solid black;padding: 10px;text-align: start;">
-            <strong>Total</strong>
+            <strong>Total Debited</strong>
           </th>
           <th style="font-weight: bold; border: 1px solid black;padding: 10px;text-align: end;">
             <strong>${total}</strong>

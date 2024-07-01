@@ -35,8 +35,8 @@ router.post('/register', async (req, res) => {
             Branch,
             Pincode,
             Country,
-            Aadhar: `https://zigmabank.com/${Aadhar}`,
-            Pan: `https://zigmabank.com/${Pan}`,
+            Aadhar: `${Aadhar}`,
+            Pan: `${Pan}`,
             isApproved: false
         });
         const username = `${FirstName} ${LastName}`
@@ -107,74 +107,90 @@ router.put('/updatebalance/:id', async (req, res) => {
     }
 });
 
+
+
+
 router.post('/transaction', async (req, res) => {
     try {
-        const { SenderAccountId, ReceiverAccountId, Amount } = req.body;
-
-        const senderAccount = await User.findOne({ Account_id: SenderAccountId });
-        const receiverAccount = await User.findOne({ Account_id: ReceiverAccountId });
-        
-        if (!senderAccount || !receiverAccount) {
-            return res.status(404).json({ message: 'Account not found' });
-        }
-
-        let transactionStatus = 'Success';
-        if (senderAccount.Balance < Amount) {
-            transactionStatus = 'Transaction Failed';
-            const failedTransaction = new Transaction({
-                SenderAccountId,
-                ReceiverAccountId,
-                Amount,
-                Status: transactionStatus,
-                TransactionType: 'Debit'
-            });
-            await failedTransaction.save();
-            return res.status(400).json({ message: 'Insufficient balance', transaction: failedTransaction });
-        }
-
-        senderAccount.Balance -= Amount;
-        receiverAccount.Balance += Amount;
-
-        await senderAccount.save();
-        await receiverAccount.save();
-
+      const { SenderAccountId, ReceiverAccountId, Amount } = req.body;
+  
+      const amount = parseInt(Amount);
+  
+      const senderAccount = await User.findOne({ Account_id: SenderAccountId });
+      const receiverAccount = await User.findOne({ Account_id: ReceiverAccountId });
+  
+      if (!senderAccount || !receiverAccount) {
+        return res.status(404).json({ message: 'One or both accounts not found' });
+      }
+  
+      if (senderAccount.Balance < amount) {
+        const failedTransaction = new Transaction({
+          SenderAccountId,
+          ReceiverAccountId,
+          Amount,
+          Status: 'Transaction Failed',
+          TransactionType: 'Debit'
+        });
+        await failedTransaction.save();
+        return res.status(400).json({ message: 'Insufficient balance', transaction: failedTransaction });
+      }
+  
+      const session = await User.startSession();
+      session.startTransaction();
+  
+      try {
+        senderAccount.Balance -= amount;
+        receiverAccount.Balance += amount;
+  
+        await senderAccount.save({ session });
+        await receiverAccount.save({ session });
+  
         const debitTransaction = new Transaction({
-            SenderAccountId,
-            ReceiverAccountId,
-            Amount,
-            Status: transactionStatus,
-            Balance: senderAccount.Balance,
-            TransactionType: 'Debit',
+          SenderAccountId,
+          ReceiverAccountId,
+          Amount: amount,
+          Status: 'Success',
+          Balance: senderAccount.Balance,
+          TransactionType: 'Debit',
         });
-
-        await debitTransactionMail(debitTransaction, senderAccount.Email);
-
+  
         const creditTransaction = new Transaction({
-            SenderAccountId,
-            ReceiverAccountId,
-            Amount,
-            Status: transactionStatus,
-            Balance: receiverAccount.Balance,
-            TransactionType: 'Credit'
+          SenderAccountId,
+          ReceiverAccountId,
+          Amount: amount,
+          Status: 'Success',
+          Balance: receiverAccount.Balance,
+          TransactionType: 'Credit'
         });
-
+  
+        await debitTransaction.save({ session });
+        await creditTransaction.save({ session });
+  
+        await debitTransactionMail(debitTransaction, senderAccount.Email);
         await creditTransactionMail(creditTransaction, receiverAccount.Email);
-
-
-        await debitTransaction.save();
-        await creditTransaction.save();
-
+  
+        await session.commitTransaction();
+        session.endSession();
+  
         res.status(200).json({
-            message: 'Transaction successful',
-            transactions: {
-                debitTransaction,
-                creditTransaction
-            }
+          message: 'Transaction successful',
+          transactions: {
+            debitTransaction,
+            creditTransaction
+          }
         });
+      } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        throw error;
+      }
     } catch (err) {
-        res.status(500).json({ message: err.message });
+      console.error('Error processing transaction', err);
+      res.status(500).json({ message: 'Internal server error' });
     }
-});
+  });
+
+
 
 router.route("/recharges").post(async (req, res) => {
     const acid = req.body.SenderAccountId;
@@ -227,40 +243,63 @@ router.route("/recharges").post(async (req, res) => {
     }
 });
         
-
-        
 router.get("/transactions/summary/:senderAccountId", async (req, res) => {
     const { senderAccountId } = req.params;
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  
     try {
-        const transactions = await Transaction.aggregate([
-            { $match: { SenderAccountId: senderAccountId, Date: { $gte: oneMonthAgo } } },
-            {
-                $group: {
-                    _id: "$SenderAccountId",
-                    totalDebitedAmount: {
-                        $sum: {
-                            $cond: [{ $eq: ["$TransactionType", "Debit"] }, "$Amount", 0]
-                        }
-                    },
-                    totalCreditedAmount: {
-                        $sum: {
-                            $cond: [{ $eq: ["$TransactionType", "Credit"] }, "$Amount", 0]
-                        }
-                    }
-                }
+      console.log(`Fetching transactions for senderAccountId: ${senderAccountId} since ${oneMonthAgo}`);
+  
+      const transactions = await Transaction.aggregate([
+        { $match: { SenderAccountId: senderAccountId, Date: { $gte: oneMonthAgo } } },
+        {
+          $group: {
+            _id: "$SenderAccountId",
+            totalDebitedAmount: {
+              $sum: {
+                $cond: [{ $eq: ["$TransactionType", "Debit"] }, "$Amount", 0]
+              }
+            },
+            totalCreditedAmount: {
+              $sum: {
+                $cond: [{ $eq: ["$TransactionType", "Credit"] }, "$Amount", 0]
+              }
             }
-        ]);
-
-        if (transactions.length === 0) {
-            return res.status(404).json({totalDebitedAmount:0, totalCreditedAmount:0});
+          }
         }
-
-        res.json(transactions[0]);
+      ]);
+  
+      console.log("Aggregation result:", transactions);
+  
+      if (transactions.length === 0) {
+        console.log(`No transactions found for senderAccountId: ${senderAccountId}`);
+        return res.status(404).json({ totalDebitedAmount: 0, totalCreditedAmount: 0 });
+      }
+  
+      console.log(`Transactions summary for senderAccountId: ${senderAccountId}`, transactions[0]);
+      res.json(transactions[0]);
     } catch (error) {
-        console.error("Error fetching transactions", error);
-        res.status(500).json({ message: "Internal server error" });
+      console.error("Error fetching transactions", error);
+      res.status(500).json({ message: "Internal server error" });
     }
-});
+  });
+  router.get('/transactions/:accountId', async (req, res) => {
+    const { accountId } = req.params;
+  
+    try {
+      const transactions = await Transaction.find({ $or: [{ SenderAccountId: accountId }, { ReceiverAccountId: accountId }] })
+                                            .sort({ Date: -1 })
+                                            .exec();
+  
+      if (transactions.length === 0) {
+        return res.status(404).json({ message: 'No transactions found for this account' });
+      }
+  
+      res.json(transactions);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
 module.exports = router;

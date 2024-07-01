@@ -18,7 +18,7 @@ const sendPaymentReceiptMail = (creditTransaction,mail) => {
   const transactionData = {
     Sender_Id: creditTransaction.SenderAccountId,
     Receiver_Id: creditTransaction.ReceiverAccountId,    
-    total: creditTransaction.Amount,
+    total: creditTransaction.Balance,
     date: creditTransaction.Date,
     TransactionId: creditTransaction._id,
     CreditedAmount: creditTransaction.Amount,
@@ -81,7 +81,7 @@ const sendPaymentReceiptMail = (creditTransaction,mail) => {
         </tr>
         <tr>
           <th style="font-weight: bold; border: 1px solid black;padding: 10px;text-align: start;">
-            <strong>Current Balance</strong>
+            <strong>Current Available Balance</strong>
           </th>
           <th style="font-weight: bold; border: 1px solid black;padding: 10px;text-align: end;">
             <strong>${total}</strong>

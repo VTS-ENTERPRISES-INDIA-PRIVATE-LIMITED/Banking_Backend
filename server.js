@@ -4,6 +4,7 @@ const session = require('express-session');
 const userRoutes = require('./ROUTES/userRoutes');
 const adminRoutes = require('./ROUTES/adminRoutes');
 const sendRegisterOtp = require("./EmailServiceModule/OtpSerivce")
+const paymentOtp = require("./EmailServiceModule/PaymentOtpService")
 const cors = require('cors');
 require('dotenv').config();
 require('./db');
@@ -31,10 +32,13 @@ app.get('/', (req, res) => {
 app.get("/sendregisterotp/:email/:user",async (req,res)=>{
   console.log("lfajjdfl;alsdk")
    const otp =  await sendRegisterOtp(req.params.email,req.params.user)
-  console.log(otp)
   res.send({"otp":otp})
 })
 
+app.get("/sendpaymentotp/:email/:username",async (req,res)=>{
+     const otp =  await paymentOtp(req.params.email,req.params.user)
+    res.send({"otp":otp})
+  })
 
 app.listen(PORT, () => {
     console.log(`Server is running on PORT ${PORT}`);

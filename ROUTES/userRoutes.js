@@ -66,12 +66,7 @@ router.route('/login/:acid/:pwd').get( async (req, res) => {
 
         res.status(200).json({
             message: 'Login successful',
-            user: {
-                Account_id: user.Account_id,
-                FirstName: user.FirstName,
-                LastName: user.LastName,
-                Branch: user.Branch,
-            }
+            user: user
         });
     } catch (err) {
         res.status(500).json({ message: "hey bhayya avvatledhu" });
@@ -229,5 +224,39 @@ router.route("/recharges").post(async (req,res)=>{
         }
     })
 })
+router.get("/transactions/summary/:senderAccountId", async (req, res) => {
+    const { senderAccountId } = req.params;
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
+    try {
+        const transactions = await Transaction.aggregate([
+            { $match: { SenderAccountId: senderAccountId, Date: { $gte: oneMonthAgo } } },
+            {
+                $group: {
+                    _id: "$SenderAccountId",
+                    totalDebitedAmount: {
+                        $sum: {
+                            $cond: [{ $eq: ["$TransactionType", "Debit"] }, "$Amount", 0]
+                        }
+                    },
+                    totalCreditedAmount: {
+                        $sum: {
+                            $cond: [{ $eq: ["$TransactionType", "Credit"] }, "$Amount", 0]
+                        }
+                    }
+                }
+            }
+        ]);
+
+        if (transactions.length === 0) {
+            return res.status(404).json({totalDebitedAmount:0, totalCreditedAmount:0});
+        }
+
+        res.json(transactions[0]);
+    } catch (error) {
+        console.error("Error fetching transactions", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
 module.exports = router;

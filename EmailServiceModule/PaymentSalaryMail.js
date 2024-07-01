@@ -1,6 +1,6 @@
 const mailSender = require("./MailService")
 // Function to send payment receipt email
-const sendPaymentReceiptMail = (transaction,mail) => {
+const sendPaymentReceiptMail = (transaction,mail,name) => {
   const sendSalaryPaySlip = async (mailbody) => {
     try {
       const info = await mailSender.sendMail({
@@ -37,7 +37,7 @@ const sendPaymentReceiptMail = (transaction,mail) => {
     <img style='width:100%;height:auto;margin-bottom:7px 4px' src='https://res.cloudinary.com/dvmkt80vc/image/upload/v1718962948/WhatsApp_Image_2024-06-21_at_3.02.53_PM_fvdozr.jpg' alt='vts-banner-image'></img>
     <h1>Transaction Details</h1>
     <div style="padding:10px">
-      <p>Dear Customer,</p>
+      <p>Dear ${name},</p>
       <p>Rs.${NetPay} has been credited to your A/C from ${Sender_Id} to ${Receiver_Id} on ${date}. Find your Transaction details below</p>
     </div>
     <div style="padding:10px">
@@ -74,27 +74,24 @@ const sendPaymentReceiptMail = (transaction,mail) => {
         </tr>
         <tr>
           <td style="border: 1px solid black;padding: 10px;text-align: start;">Basic Salary</td>
-          <td style="border: 1px solid black;padding: 10px;text-align: end;">${BasicSalary}</td>
+          <td style="border: 1px solid black;padding: 10px;text-align: end;">&#8377; ${BasicSalary}</td>
         </tr>
         <tr>
           <td style="border: 1px solid black;padding: 10px;text-align: start;">HRA</td>
-          <td style="border: 1px solid black;padding: 10px;text-align: end;">+${HRA}</td>
+          <td style="border: 1px solid black;padding: 10px;text-align: end;">+ &#8377; ${HRA}</td>
         </tr>
         <tr>
           <td style="border: 1px solid black;padding: 10px;text-align: start;">LTA</td>
-          <td style="border: 1px solid black;padding: 10px;text-align: end;">+${LTA}</td>
+          <td style="border: 1px solid black;padding: 10px;text-align: end;">+ &#8377; ${LTA}</td>
         </tr>
         <tr>
           <td style="border: 1px solid black;padding: 10px;text-align: start;">Bonus</td>
-          <td style="border: 1px solid black;padding: 10px;text-align: end;">+${Bonus}</td>
+          <td style="border: 1px solid black;padding: 10px;text-align: end;">+ &#8377; ${Bonus}</td>
         </tr>
-        <tr>
-          <td style="border: 1px solid black;padding: 10px;text-align: start;">Income Tax</td>
-          <td style="border: 1px solid black;padding: 10px;text-align: end;">-${IncomeTax}</td>
-        </tr>
+    
         <tr>
           <td style="border: 1px solid black;padding: 10px;text-align: start;">Provident Fund</td>
-          <td style="border: 1px solid black;padding: 10px;text-align: end;">-${PF}</td>
+          <td style="border: 1px solid black;padding: 10px;text-align: end;">- &#8377; ${PF}</td>
         </tr>
         <tr>
           <td style="border: 1px solid black;padding: 10px;text-align: start;">Transaction Type:</td>

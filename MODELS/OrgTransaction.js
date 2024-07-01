@@ -39,11 +39,7 @@ const OrgTransactionSchema = new mongoose.Schema({
         required: false,
         default: 2000
     },
-    IncomeTax: {
-        type: Number,
-        required: false,
-        default: 1000
-    },
+
     PF: {
         type: Number,
         required: false,

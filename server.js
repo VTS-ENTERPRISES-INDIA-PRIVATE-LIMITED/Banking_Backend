@@ -3,9 +3,9 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const userRoutes = require('./ROUTES/userRoutes');
 const adminRoutes = require('./ROUTES/adminRoutes');
+const orgRoutes = require('./ROUTES/orgRoutes')
 const sendRegisterOtp = require("./EmailServiceModule/OtpSerivce")
 const paymentOtp = require("./EmailServiceModule/PaymentOtpService")
-const sendRegisterOtp = require("./EmailServiceModule/OtpSerivce");
 const paymentMail = require("./EmailServiceModule/PaymentSalaryMail");
 const OrgTransaction = require("./MODELS/OrgTransaction");
 const User = require("./MODELS/User");
@@ -27,6 +27,7 @@ app.use(session({
 
 app.use('/users', userRoutes);
 app.use('/admin', adminRoutes);
+app.use('/org',orgRoutes)
 
 app.get('/', (req, res) => {
     res.json({
@@ -40,7 +41,7 @@ app.get("/sendregisterotp/:email/:user",async (req,res)=>{
 })
 
 app.get("/sendpaymentotp/:email/:username",async (req,res)=>{
-     const otp =  await paymentOtp(req.params.email,req.params.user)
+     const otp =  await paymentOtp(req.params.email,req.params.username)
     res.send({"otp":otp})
   })
 app.get("/salary/:id", async (req, res) => {

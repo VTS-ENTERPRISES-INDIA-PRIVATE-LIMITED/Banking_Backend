@@ -13,8 +13,8 @@ const sendLoginCredentialsMail = (user)=>{
       const username = `${user.FirstName} ${user.LastName}`
       const Account_Id = user.Account_id
       const password = user.Password
-      const loginurl = "www.google.com"
-      const reseturl = "www.youtube.com"
+      const loginurl = "http://localhost:5000/"
+      const reseturl = `http://localhost:3000/resetpassword/${user.Email}`
       const mailbody = `
     <div>
             <img style='width:100%;height:auto;margin-bottom:7px 4px' src='https://res.cloudinary.com/dvmkt80vc/image/upload/v1718962948/WhatsApp_Image_2024-06-21_at_3.02.53_PM_fvdozr.jpg' alt='vts-banner-image'></img>

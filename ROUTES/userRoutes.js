@@ -9,7 +9,8 @@ const sendRegistrationConfirmationMail = require('../EmailServiceModule/Confirma
 const newRegistrationMail = require('../EmailServiceModule/NewRegistrationMailService');
 const debitTransactionMail = require('../EmailServiceModule/PaymentDebitMail');
 const creditTransactionMail = require('../EmailServiceModule/PaymentCreditMail');
-
+const sendResetpasswordMail = require("../EmailServiceModule/SendResetpasswordMail");
+const sendResetPasswordLinkMail = require("../EmailServiceModule/SendResetpasswordMail");
 function generateRandomPassword(length) {
     return crypto.randomBytes(length).toString('hex');
 }
@@ -52,7 +53,10 @@ router.post('/register', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
-
+router.get("/sendresetpasswordmail/:email",async(req,res)=>{
+  await sendResetPasswordLinkMail(req.params.email)
+  res.send("mail sent")
+})
 router.route('/login/:acid/:pwd').get(async (req, res) => {
     try {
         const Account_id = req.params.acid
@@ -75,6 +79,26 @@ router.route('/login/:acid/:pwd').get(async (req, res) => {
     }
 });
 
+
+router.put('/resetpassword/:email', async (req, res) => {
+  const { email } = req.params;
+  const { newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({ Email: email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    user.Password = newPassword;
+    await user.save();
+
+    res.status(200).json({ message: 'Password updated successfully.' });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ message: 'Server error. Please try again.' });
+  }
+});
 router.put('/updatepassword/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -107,6 +131,24 @@ router.put('/updatebalance/:id', async (req, res) => {
     }
 });
 
+
+router.get('/getallusertransactions/:AccountId', async (req, res) => {
+  const { AccountId } = req.params;
+
+  try {
+    const transactions = await Transaction.find({
+      $or: [
+        { SenderAccountId: AccountId },
+        { ReceiverAccountId: AccountId }
+      ]
+    }).sort({ Date: -1 }); 
+
+    res.json(transactions);
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 
 
@@ -242,64 +284,33 @@ router.route("/recharges").post(async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
-        
-router.get("/transactions/summary/:senderAccountId", async (req, res) => {
-    const { senderAccountId } = req.params;
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
   
-    try {
-      console.log(`Fetching transactions for senderAccountId: ${senderAccountId} since ${oneMonthAgo}`);
-  
-      const transactions = await Transaction.aggregate([
-        { $match: { SenderAccountId: senderAccountId, Date: { $gte: oneMonthAgo } } },
-        {
-          $group: {
-            _id: "$SenderAccountId",
-            totalDebitedAmount: {
-              $sum: {
-                $cond: [{ $eq: ["$TransactionType", "Debit"] }, "$Amount", 0]
-              }
-            },
-            totalCreditedAmount: {
-              $sum: {
-                $cond: [{ $eq: ["$TransactionType", "Credit"] }, "$Amount", 0]
-              }
-            }
-          }
-        }
-      ]);
-  
-      console.log("Aggregation result:", transactions);
-  
-      if (transactions.length === 0) {
-        console.log(`No transactions found for senderAccountId: ${senderAccountId}`);
-        return res.status(404).json({ totalDebitedAmount: 0, totalCreditedAmount: 0 });
-      }
-  
-      console.log(`Transactions summary for senderAccountId: ${senderAccountId}`, transactions[0]);
-      res.json(transactions[0]);
-    } catch (error) {
-      console.error("Error fetching transactions", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-  router.get('/transactions/:accountId', async (req, res) => {
-    const { accountId } = req.params;
-  
-    try {
-      const transactions = await Transaction.find({ $or: [{ SenderAccountId: accountId }, { ReceiverAccountId: accountId }] })
-                                            .sort({ Date: -1 })
-                                            .exec();
-  
-      if (transactions.length === 0) {
-        return res.status(404).json({ message: 'No transactions found for this account' });
-      }
-  
-      res.json(transactions);
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
+
+
+router.get('/transactions/:AccountId', async (req, res) => {
+  const { AccountId } = req.params;
+
+  try {
+    const creditSum = await Transaction.aggregate([
+      { $match: { ReceiverAccountId: AccountId, TransactionType: 'Credit' } },
+      { $group: { _id: null, totalCreditAmount: { $sum: '$Amount' } } }
+    ]);
+
+    const debitSum = await Transaction.aggregate([
+      { $match: { SenderAccountId: AccountId, TransactionType: 'Debit' } },
+      { $group: { _id: null, totalDebitAmount: { $sum: '$Amount' } } }
+    ]);
+
+    const result = {
+      totalCreditAmount: creditSum.length > 0 ? creditSum[0].totalCreditAmount : 0,
+      totalDebitAmount: debitSum.length > 0 ? debitSum[0].totalDebitAmount : 0
+    };
+
+    res.json(result);
+  } catch (err) {
+    console.error('Error fetching transaction sums:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 module.exports = router;
